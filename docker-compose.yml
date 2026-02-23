@@ -19,9 +19,7 @@ services:
 
   # Node.js / Express Backend
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: manishjangra97/full-stack-mean-application-backend:latest
     container_name: crud-backend
     restart: unless-stopped
     # environment:
@@ -34,9 +32,7 @@ services:
 
   # Angular Frontend
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: manishjangra97/full-stack-mean-application-frontend:latest
     container_name: crud-frontend
     restart: unless-stopped
     depends_on:

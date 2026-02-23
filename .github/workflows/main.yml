@@ -51,6 +51,7 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/full-stack-mean-application-backend:${{ github.sha }}
     
   deploy-on-ec2:
+    needs: login-build-push-docker
     runs-on: ubuntu-latest
 
     steps:
