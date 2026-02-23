@@ -1,0 +1,84 @@
+name: CI/CD Pipeline — Full Stack MEAN Application
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  login-build-push-docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6.0.2
+
+      - name: Login Docker Using Token
+        uses: docker/login-action@v3.7.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN_ID }}
+
+      - name: Docker Setup Buildx
+        uses: docker/setup-buildx-action@v3.12.0
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6.1.0
+        with:
+          node-version: 25
+  
+      - name: Build and Push Docker Images [ Frontend ]
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/full-stack-mean-application-frontend:latest
+            ${{ secrets.DOCKER_USERNAME }}/full-stack-mean-application-frontend:${{ github.sha }}
+
+      - name: Build and Push Docker Images [ Backend ]
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/full-stack-mean-application-backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/full-stack-mean-application-backend:${{ github.sha }}
+    
+  deploy-on-ec2:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6.0.2
+      
+      - name: Copy Files to EC2
+        uses: appleboy/scp-action@master
+        env:
+          USER: /home/${{ secrets.EC2_USER }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: "docker-compose.yml,"
+          target: ${{ env.USER }}
+      
+      - name: Final SSH and Deploy
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          USER: /home/${{ secrets.EC2_USER }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.USER }}
+            docker compose down || true
+            docker compose pull
+            docker compose up -d --build --remove-orphans
+            docker image prune -a -f
