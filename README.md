@@ -5,6 +5,13 @@ A full-stack CRUD application built with the **MEAN stack** (MongoDB, Express, A
 > **Live URL (local):** http://localhost  
 > **API Base:** http://localhost/api/tutorials
 
+### Screenshot [EC2 Server]
+
+![Preview 1](./screenshots/preview-1.png)
+
+![Preview 2](./screenshots/preview-2.png)
+
+
 ---
 
 ## 📁 Project Structure
@@ -13,7 +20,7 @@ A full-stack CRUD application built with the **MEAN stack** (MongoDB, Express, A
 crud-dd-task-mean-app/
 ├── .github/
 │   └── workflows/
-│       └── ci-cd.yml          # GitHub Actions CI/CD pipeline
+│       └── main.yml          # GitHub Actions CI/CD pipeline
 ├── backend/
 │   ├── app/
 │   │   ├── config/
@@ -253,6 +260,11 @@ Push to main branch
                compose up -d)
 ```
 
+### Screenshots
+![Login Build Push On Docker](./screenshots/ci-cd-login-build-push-docker.png)
+
+![Deploy On EC2](./screenshots/ci-cd-deploy-to-ec2.png)
+
 ### Jobs
 
 | Job | Trigger | What it does |
@@ -281,9 +293,9 @@ GitHub → Your Repo → Settings → Secrets and variables → Actions → New 
 |-------------|-------------|---------|
 | `DOCKER_USERNAME` | Your Docker Hub username | `manishjangra97` |
 | `DOCKER_PASSWORD` | Docker Hub password or **Access Token** | `dckr_pat_xxxx` |
-| `SERVER_HOST` | IP address of your deployment server | `192.168.1.100` |
-| `SERVER_USER` | SSH username on server | `ubuntu` |
-| `SERVER_SSH_KEY` | Private SSH key (contents of `~/.ssh/id_rsa`) | `-----BEGIN...` |
+| `EC2_HOST` | IP address of your deployment server | `192.168.1.100` |
+| `EC2_USER` | SSH username on server | `ubuntu` |
+| `EC2_PRIVATE_KEY` | Private SSH key (contents of `~/.ssh/id_rsa`) | `-----BEGIN...` |
 
 ### Step 3: Get a Docker Hub Access Token (Recommended)
 
@@ -301,7 +313,7 @@ ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/deploy_key
 # Copy public key to your server
 ssh-copy-id -i ~/.ssh/deploy_key.pub user@your-server-ip
 
-# Add private key content to GitHub Secret: SERVER_SSH_KEY
+# Add private key content to GitHub Secret: EC2_SSH_KEY
 cat ~/.ssh/deploy_key
 ```
 
@@ -499,6 +511,10 @@ docker compose ps
 # Check logs
 docker compose logs -f
 ```
+### Running Container Screenshot
+
+![Running Container](./screenshots/server-running-containers.png)
+
 
 App will be available at: **http://\<EC2_PUBLIC_IP\>**
 
@@ -512,14 +528,14 @@ The `main.yml` pipeline deploys automatically to your EC2 on every push to `main
 
 | Secret | Value |
 |--------|-------|
-| `SERVER_HOST` | EC2 Public IP (e.g. `13.233.xx.xx`) |
-| `SERVER_USER` | `ubuntu` (default for Ubuntu AMI) |
-| `SERVER_SSH_KEY` | Contents of your `.pem` private key file |
+| `EC2_HOST` | EC2 Public IP (e.g. `13.233.xx.xx`) |
+| `EC2_USER` | `ubuntu` (default for Ubuntu AMI) |
+| `EC2_SSH_KEY` | Contents of your `.pem` private key file |
 
 ```bash
 # Copy your .pem file contents
 cat your-key.pem
-# Paste the ENTIRE content (including -----BEGIN ... END-----) as SERVER_SSH_KEY
+# Paste the ENTIRE content (including -----BEGIN ... END-----) as EC2_SSH_KEY
 ```
 
 #### 5.2 — Make EC2 Ready for Auto-Deploy
@@ -569,7 +585,6 @@ GitHub Actions (main.yml)
 ```
 
 ---
-
 ## 🐛 Troubleshooting
 
 | Problem | Cause | Fix |
